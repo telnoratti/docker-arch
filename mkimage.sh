@@ -1,10 +1,13 @@
-#!/usr/bin/zsh
+#!/usr/bin/bash
 set -e
+
 
 (( EUID == 0 )) || {
     echo "This script requires root privileges"
     exit 1
 }
+
+pacman -S --noconfirm expect arch-install-scripts
 
 (hash arch-chroot &>/dev/null && hash pacstrap &>/dev/null) || {
     echo "This script requires arch-chroot and pacstrap from arch-install-scripts"
@@ -18,25 +21,25 @@ hash expect &>/dev/null || {
 
 rootfs=$(mktemp -d ${TMPDIR:-/var/tmp}/rootfs-archlinux-XXXXXXXXXX)
 ignore_packages=(
-    cryptsetup
-    device-mapper
-    groff
-    iproute2
-    jfsutils
-    linux
-    lvm2
-    man-db
-    man-pages
-    mdadm
-    nano
-    netctl
-    openresolv
-    pciutils
-    pcmciautils
-    reiserfsprogs
-    s-nail
-    usbutils
-    xfsprogs
+    'cryptsetup'
+    'device-mapper'
+    'groff'
+    'iproute2'
+    'jfsutils'
+    'linux'
+    'lvm2'
+    'man-db'
+    'man-pages'
+    'mdadm'
+    'nano'
+    'netctl'
+    'openresolv'
+    'pciutils'
+    'pcmciautils'
+    'reiserfsprogs'
+    's-nail'
+    'usbutils'
+    'xfsprogs'
 )
 
 # install only the base packages we need with pacstrap
@@ -46,9 +49,9 @@ expect <<EOF
       sleep .1
       exp_send -s -- \$arg
   }
-  set timeout 60
+  set timeout 600
 
-  spawn pacstrap -GMcdi $rootfs base curl haveged git --ignore ${ignore_packages// /,}
+  spawn pacstrap -GMcdi $rootfs base curl haveged git --ignore $(tr ' ' , <<< ${ignore_packages[@]})
   expect {
       -exact "anyway? \[Y/n\] " { send -- "n\r"; exp_continue }
       -exact "(default=all): " { send -- "\r"; exp_continue }
@@ -71,7 +74,7 @@ echo "Server = https://mirrors.kernel.org/archlinux/\$repo/os/\$arch" > $rootfs/
 arch-chroot $rootfs /bin/sh -c "haveged -w 1024; pacman-key --init; pkill haveged; pacman -Rs --noconfirm haveged; pacman-key --populate archlinux; pkill gpg-agent"
 
 echo "Building and compressing archive..."
-tar --numeric-owner --create --auto-compress --file rootfs.tar.xz --directory "$rootfs" --transform='s,^./,,' .
+tar --numeric-owner --create --auto-compress --file build/rootfs.tar.xz --directory "$rootfs" --transform='s,^./,,' .
 
 echo "Cleaning up..."
 rm -rf $rootfs
