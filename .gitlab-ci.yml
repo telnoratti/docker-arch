@@ -16,8 +16,6 @@ build:
     - docker run --rm --privileged -v /cwinkowski/docker-arch:/build quay.io/telnoratti/arch /build/mkimage.sh
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" .
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
-  tags:
-    - kubernetes
 
 deploy:
   stage: deploy
@@ -30,5 +28,3 @@ deploy:
     - docker tag "$CI_REGISTRY_IMAGE:$IMAGE_TAG" "quay.io/telnoratti/arch:latest"
     - docker login -u="telnoratti+gitlab_slave" -p="$QUAY_TOKEN" quay.io
     - docker push "quay.io/telnoratti/arch:latest"
-    tags:
-    - kubernetes
