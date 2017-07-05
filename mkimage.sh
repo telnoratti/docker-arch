@@ -22,6 +22,10 @@ hash expect &>/dev/null || {
 rootfs=$(mktemp -d ${TMPDIR:-/var/tmp}/rootfs-archlinux-XXXXXXXXXX)
 ignore_packages=(
     'cryptsetup'
+    'systemd'
+    'udev'
+    'systemd-sysvcompat'
+    'dhcpcd'
     'device-mapper'
     'groff'
     'iproute2'
