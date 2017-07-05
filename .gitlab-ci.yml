@@ -16,14 +16,19 @@ build:
     - docker run --rm --privileged -v /cwinkowski/docker-arch:/build quay.io/telnoratti/arch /build/mkimage.sh
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" .
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+  tags:
+    - kubernetes
 
 deploy:
   stage: deploy
   only:
     - master
   script:
+    - export IMAGE_TAG=$(echo -en $CI_COMMIT_REF_NAME | tr -c '[:alnum:]_.-' '-')
     - docker login -u "gitlab-ci-token" -p "$CI_JOB_TOKEN" $CI_REGISTRY
     - docker pull "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
     - docker tag "$CI_REGISTRY_IMAGE:$IMAGE_TAG" "quay.io/telnoratti/arch:latest"
     - docker login -u="telnoratti+gitlab_slave" -p="$QUAY_TOKEN" quay.io
     - docker push "quay.io/telnoratti/arch:latest"
+  tags:
+    - kubernetes
