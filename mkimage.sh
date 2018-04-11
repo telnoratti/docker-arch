@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 set -e
+set -x
 
 
 (( EUID == 0 )) || {
@@ -75,7 +76,7 @@ arch-chroot $rootfs locale-gen
 echo "Server = https://mirrors.kernel.org/archlinux/\$repo/os/\$arch" > $rootfs/etc/pacman.d/mirrorlist
 
 # create pacman keyring; pkill gpg-agent so it cleans up its socket
-arch-chroot $rootfs /bin/sh -c "haveged -w 1024; pacman-key --init; pkill haveged; pacman -Rs --noconfirm haveged; pacman-key --populate archlinux; pkill gpg-agent"
+arch-chroot $rootfs /bin/sh -c "haveged -w 1024; pacman-key --init; pkill haveged; pacman -Rs --noconfirm haveged; pacman-key --populate archlinux"
 
 echo "Building and compressing archive..."
 tar --numeric-owner --create --auto-compress --file build/rootfs.tar.xz --directory "$rootfs" --transform='s,^./,,' .
